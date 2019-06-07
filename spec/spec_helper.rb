@@ -1,4 +1,5 @@
 require "bundler/setup"
+require 'pry'
 require "behaves"
 
 RSpec.configure do |config|
