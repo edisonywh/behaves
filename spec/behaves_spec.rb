@@ -5,9 +5,7 @@ RSpec.describe Behaves do
 
   context 'when `Dog` is supposed to behave like `Animal`' do
     before do
-      Animal = Class.new
-
-      Animal.class_eval do
+      Animal = Class.new do
         extend Behaves
 
         implements :method_one, :method_two
@@ -46,34 +44,47 @@ RSpec.describe Behaves do
 
             behaves_like Animal
           end
-        end.to raise_error NotImplementedError
+        # end.to raise_error NotImplementedError
+        end.to raise_error NotImplementedError, "Expected `Animal` to define behaviors, but none found."
       end
     end
   end
 
+  context 'when `Dog` is not supposed to behave like `Animal`' do
+    it 'should not raise any error' do
+      Dog = Class.new
+
+      expect do
+        Dog.class_eval do
+          extend Behaves
+
+          def method_one; end
+          def method_two; end
+        end
+      end.not_to raise_error
+    end
+  end
+
+  context 'when `Animal` does not implement behavior' do
+    context 'when `Dog` adheres to a non-existent `Animal` behavior' do
+      skip "Skipping because the code implementation (`at_exit`) conflicts with rspec's `raise_error`. See https://github.com/rspec/rspec/issues/42"
+      it 'should raise error' do
+        Animal = Class.new
+
+        expect do
+          Dog = Class.new do
+            extend Behaves
+
+            behaves_like Animal
+          end
+        end.to raise_error NotImplementedError, "Expected `Animal` to define behaviors, but none found."
+      end
+    end
+  end
+
+  private
+
   def class_cleaner(*klasses)
     klasses.each { |klass| Object.send(:remove_const, "#{klass}") unless defined? klass }
   end
-
-  # def load_class(klass, behaves: false)
-  #   klass.class_eval do
-  #     extend Behaves
-
-  #     if behaves
-  #       behaves_like Animal
-  #     end
-  #   end
-  # end
-
-  # context 'when `Dog` is not supposed to behave like `Animal`' do
-  #   it 'should not raise any error' do
-  #   end
-  # end
-
-  # context 'when `Animal` does not implement behavior' do
-  #   context 'when `Dog` adheres to a non-existent `Animal` behavior' do
-  #     it 'should raise error' do
-  #     end
-  #   end
-  # end
 end

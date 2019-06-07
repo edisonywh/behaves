@@ -7,7 +7,7 @@ module Behaves
 
   def behaves_like(klass)
     at_exit do
-      required = klass.instance_variable_get("@behaviors")
+      required = defined_behaviors(klass)
 
       implemented = Set.new(self.instance_methods - Object.instance_methods)
 
@@ -16,6 +16,16 @@ module Behaves
       exit if unimplemented.empty?
 
       raise NotImplementedError, "Expected `#{self}` to behave like `#{klass}`, but `#{unimplemented.to_a.join(', ')}` are not implemented."
+    end
+  end
+
+  private
+
+  def defined_behaviors(klass)
+    if behaviors = klass.instance_variable_get("@behaviors")
+      behaviors
+    else
+      raise NotImplementedError, "Expected `#{klass}` to define behaviors, but none found."
     end
   end
 end
