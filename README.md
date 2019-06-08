@@ -98,7 +98,7 @@ class Dog
 end
 ```
 
-With `Behaves`, it is not immediately obvious that Dog should behave like a certain class -> `Animal`, and you do not have to implement stub methods on `Animal`.
+With `Behaves`, it is immediately obvious that Dog should behave like a certain class -> `Animal`, and you do not have to implement stub methods on `Animal`.
 
 ## Thoughts
 
