@@ -12,7 +12,7 @@ GEM
     pry (0.12.2)
       coderay (~> 1.1.0)
       method_source (~> 0.9.0)
-    rake (10.4.2)
+    rake (12.3.2)
     rspec (3.8.0)
       rspec-core (~> 3.8.0)
       rspec-expectations (~> 3.8.0)
@@ -26,6 +26,8 @@ GEM
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.8.0)
     rspec-support (3.8.0)
+    rspec_junit_formatter (0.4.1)
+      rspec-core (>= 2, < 4, != 2.12.0)
 
 PLATFORMS
   ruby
@@ -34,8 +36,9 @@ DEPENDENCIES
   behaves!
   bundler (~> 1.17)
   pry
-  rake (~> 10.0)
+  rake (~> 12.3)
   rspec (~> 3.0)
+  rspec_junit_formatter
 
 BUNDLED WITH
    1.17.1
