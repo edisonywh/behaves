@@ -1,4 +1,5 @@
-require "behaves/version"
+require 'behaves/version'
+require 'set'
 
 module Behaves
   def implements(*methods)
