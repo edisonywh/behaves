@@ -2,6 +2,7 @@ require "bundler/setup"
 require 'pry'
 require "behaves"
 require 'rspec'
+require 'rspec_junit_formatter'
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure
