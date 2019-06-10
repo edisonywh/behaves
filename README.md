@@ -2,6 +2,14 @@
 ![RubyGems Badge](https://img.shields.io/gem/v/behaves.svg)
 ![Code Climate maintainability](https://img.shields.io/codeclimate/maintainability/edisonywh/behaves.svg)
 
+# Behaves
+
+Behaves is a gem that helps you define behaviors between classes. **Say goodbye to runtime error when defining behaviors.**
+
+Behaves is especially useful for dealing with adapter patterns by making sure that all of your adapters define the required behaviors. See [usage below](https://github.com/edisonywh/behaves#usage) for more examples.
+
+*Detailed explanations in the sections below.*
+
 ## Installation
 
 Add this line to your application's Gemfile:
@@ -10,51 +18,40 @@ Add this line to your application's Gemfile:
 gem 'behaves'
 ```
 
-
-# Behaves
-
-Behaves is a gem that helps you maintain contracts between different classes. This is especially useful for dealing for adapter patterns by making sure that all of your adapters define the required behaviors.
-
-For example, you can specify that class `Dog` and class `Cat` should both behave the same as `Animal`, or that your `ApiClientMock` should behave the same as the original `ApiClient` (more explanation below)
-
-The idea for `Behaves` stemmed from my research into [adapter pattern in Ruby](https://www.sitepoint.com/using-and-testing-the-adapter-design-pattern/) and José Valim's article on [Mocks and explicit contracts](http://blog.plataformatec.com.br/2015/10/mocks-and-explicit-contracts/).
-
-I found that the current idiom to achieve `behaviors` in Ruby is through `Inheritence`, and then subsequently defining a "required" (I put quotation marks around it, because it's not exactly `required` until you run it) method, which does nothing except raising a `NotImplementedError`. While I don't necessarily think it's *bad*, I do think that there could be an alternative that's **more explicit**, **less boilerplate**, **cleaner ancestors hierachy**, thus the birth of `Behaves`.
-
-## Cons of inheritance
-
-Let's dive into the cons of implementing behaviors through `Inheritance`
-
-First, I think this is a very opaque implementation - at a quick glance, there's no real way to know if there are any behaviors required. The only way to be sure is to dive into the parent class and look for any methods that does nothing but raises a `NotImplementedError`. This gets cascadingly worse if you have multiple hierachy of inheritance.
-
-Secondly, with inheritance, the behavioral contract is dependent upon the method lookup chain - this poses a few issues:
-
-1) `Unused code` - You now have a stub method on your parent class that does nothing but raise an error, and it won't be used any longer after it's your behaviors are adhered to.
-
-2) `Fragile implementation` - You are reliant on the ancestor chain not being intercepted. For example, if someone else on your team defines a method that has the same name as your behavior, but sits higher up the chain (through `prepending` for example), your stub method is now useless and won't ever catch if a behavior is not implemented.
-
-3) `Runtime errors` - There are possibility for runtime errors. If a child did not adhere to the required behaviors, your code won't actually know that until it tries to call the method on child class. Error on production? Not good.
-
-## How does `Behaves` solve this problem?
-
-Behaves aim to solve this problem by being **explicit** and **upfront**:
-
-- A very clear `behaves_like Animal` that indicates that this class has a certain behaviors to adhere to, as implemented by `Animal`.
-
-- Guarantee to catch implementation deviation regardless of the ancestor chains.
-
-- With the way Behaves is written, your code will fail to even load if you don't adhere to the behaviors upfront - **no more runtime errors in production**.
-
-- No need to define a stub method that does nothing - behaviors checking are done through symbols, as defined in `implements` by the behaviorial class.
-
-See below for more examples about how `Behaves` work.
-
 ## Usage
 
-Let's take a look how to define behaviors using `Inheritance`.
+This is how you define behaviors with `behaves`.
+
+First, define required methods on the `Behavior Object` with the `implements` method, which take a list of methods.
+```ruby
+class Animal
+  extend Behaves
+
+  implements :speak, :eat
+end
+```
+
+Then, you can turn any object (the `Behaving Object`) to behave like the `Behavior Object` by using the `behaves_like` method, which takes a `Behavior Object`.
+```ruby
+class Dog
+  extend Behaves
+
+  behaves_like Animal
+end
+```
+
+Voilà, that's all it takes to define behaviors! Now if `Dog` does not implement `speak` and `eat`, your code will then throw error **on file load**, instead of **at runtime**.
+
+```diff
+- NotImplementedError: Expected `Dog` to behave like `Animal`, but `speak, eat` are not implemented.
+```
+
+This is in stark contrast to defining behaviors with inheritance. Let's take a look.
+
+### Inheritance-based behaviors
 
 ```ruby
-# Inheritance Behaviors
+# Inheritance - potential runtime error.
 class Animal
   def speak
     raise NotImplementedError, "Animals need to be able to speak!"
@@ -69,44 +66,63 @@ class Dog < Animal
   def speak
     "woof"
   end
-
-  def eat
-    "chomp"
-  end
 end
 ```
 
-You have now defined `Animal#speak` and `Animal#eat` which are not useful at all, along with all the issues I pointed out earlier.
+1) It is unclear that `Dog` has a certain set of behaviors to adhere to.
 
-Now let's take a look at how `Behaves` work.
+2) Notice how `Dog` does not implement `#eat`? Inheritance-based behaviors have no guarantee that `Dog` adheres to a certain set of behaviors, which means you can run into runtime errors like this.
 
 ```ruby
-class Animal
+corgi = Dog.new
+corgi.eat
+# => NotImplementedError, "Animals need to be able to eat!"
+```
+
+3) Another problem is you have now defined `Animal#speak` and `Animal#eat`, two stub methods of which they do nothing but raise an undesirable `NotImplementedError`.
+
+The power of `Behaves` does not stop here either.
+
+### Multi-behaviors
+
+`Behaves` allow you to define multiple behavior for a single behaving object. **This is not possible with inheritance**.
+
+```ruby
+class Predator
   extend Behaves
 
-  implements :speak, :eat
+  implements :hunt
 end
 
-class Dog
+class Prey
   extend Behaves
 
-  behaves_like Animal
+  implements :run, :hide
+end
 
-  def speak
-    "woof"
-  end
+class Shark
+  extend Behaves
 
-  def eat
-    "chomp"
-  end
+  # Shark is both a `Predator` and a `Prey`
+  behaves_like Predator
+  behaves_like Prey
 end
 ```
 
-With `Behaves`, it is immediately obvious that Dog should behave like a certain class -> `Animal`, and you do not have to implement stub methods on `Animal`.
+## Tips
+If you do not want to type `extend Behaves` every time, you can monkey patch `Behaves` onto `Object` class, like so:
+
+> Object.send(:extend, Behaves)
 
 ## Thoughts
 
-Referring to the article by José Valim, I really liked the idea of being able to use Mock as a noun. However, while the idea sounds good, you've now introduced a new problem in your codebase -- your Mock and your original Object might deviate from their implementation later on. Not a good design if it breaks. Elixir has `@behaviors` & `@callback` built in to keep them in sync. `Behaves` is inspired by that.
+The idea for `Behaves` stemmed from my research into [adapter pattern in Ruby](https://www.sitepoint.com/using-and-testing-the-adapter-design-pattern/) and José Valim's article on [Mocks and explicit contracts](http://blog.plataformatec.com.br/2015/10/mocks-and-explicit-contracts/).
+
+I found that the current idiom to achieve `behaviors` in Ruby is through inheritence, and then subsequently defining 'required' methods, which does nothing except raising a `NotImplementedError`. This approach is fragile, as it **does not guarantee behaviors**, runs the **risk of runtime errors**, and has an **opaque implementation**.
+
+Thus with this comes the birth of `Behaves`.
+
+Also referring to the article by José Valim, I really liked the idea of being able to use Mock as a noun. However, while the idea sounds good, you've now introduced a new problem in your codebase -- your Mock and your original Object might deviate from their implementation later on. Not a good design if it breaks. Elixir has `@behaviors` & `@callback` built in to keep them in sync. `Behaves` is inspired by that.
 
 ## Development
 
@@ -121,7 +137,3 @@ Bug reports and pull requests are welcome on GitHub at https://github.com/edison
 ## License
 
 The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
-
-## Code of Conduct
-
-Everyone interacting in the Behaves project’s codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/[USERNAME]/behaves/blob/master/CODE_OF_CONDUCT.md).
