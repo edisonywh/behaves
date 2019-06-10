@@ -1,3 +1,7 @@
+![CircleCI Badge](https://img.shields.io/circleci/build/github/edisonywh/behaves.svg)
+![RubyGems Badge](https://img.shields.io/gem/v/behaves.svg)
+![Code Climate maintainability](https://img.shields.io/codeclimate/maintainability/edisonywh/behaves.svg)
+
 ## Installation
 
 Add this line to your application's Gemfile:
