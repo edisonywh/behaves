@@ -184,6 +184,74 @@ RSpec.describe Behaves do
         expect(Dog.new.send(:greet)).to eq("bonjour")
       end
     end
+
+    context "injecting to include module" do
+      TestModule = Module.new
+
+      before do
+        TestModule.module_eval do
+          def greet
+            "hello"
+          end
+        end
+
+        Animal.class_eval do
+          implements :method_one
+
+          inject_behaviors do
+            include TestModule
+          end
+        end
+
+        Dog.class_eval do
+          behaves_like Animal
+
+          def method_one; end
+        end
+      end
+
+      it "should add greet as an instance method to Dog" do
+        expect(Dog.instance_methods).to include(:greet)
+      end
+
+      it "should return the correct result when greet is invoked from Dog" do
+        expect(Dog.new.greet).to eq("hello")
+      end
+    end
+
+    context "injecting to extend a module" do
+      TestModule = Module.new
+
+      before do
+        TestModule.module_eval do
+          def greet
+            "hello"
+          end
+        end
+
+        Animal.class_eval do
+          implements :method_one
+
+          inject_behaviors do
+            extend TestModule
+          end
+        end
+
+        Dog.class_eval do
+          behaves_like Animal
+
+          def method_one; end
+        end
+      end
+
+      it "should add greet as a class method to Dog" do
+        expect(Dog.methods).to include(:greet)
+      end
+
+      it "should return the correct result when greet is invoked from Dog" do
+        expect(Dog.greet).to eq("hello")
+      end
+    end
   end
 
   private
