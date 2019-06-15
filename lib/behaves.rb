@@ -11,8 +11,8 @@ module Behaves
   end
 
   def behaves_like(klass)
-    at_exit { check_for_unimplemented(klass) }
     add_injected_behaviours(klass)
+    at_exit { check_for_unimplemented(klass) }
   end
 
   private
