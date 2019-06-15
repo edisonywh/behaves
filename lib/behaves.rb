@@ -35,4 +35,10 @@ module Behaves
       raise NotImplementedError, "Expected `#{klass}` to define behaviors, but none found."
     end
   end
+
+  def injected_behaviours(klass)
+    if inject_behaviours = klass.instance_variable_get("@injected_behaviours")
+      inject_behaviours
+    end
+  end
 end
