@@ -6,12 +6,12 @@ module Behaves
     @behaviors ||= Set.new(methods)
   end
 
-  def inject_behaviours (&block)
-    @injected_behaviours ||= block
+  def inject_behaviors (&block)
+    @inject_behaviors ||= block
   end
 
   def behaves_like(klass)
-    add_injected_behaviours(klass)
+    add_injected_behaviors(klass)
     at_exit { check_for_unimplemented(klass) }
   end
 
@@ -37,16 +37,16 @@ module Behaves
     end
   end
 
-  def add_injected_behaviours(klass)
-    injected_behaviours = injected_behaviours(klass)
-    if injected_behaviours
-      self.class_eval &injected_behaviours
+  def add_injected_behaviors(klass)
+    injected_behaviors = klass.instance_variable_get("@inject_behaviors")
+    if injected_behaviors
+      self.class_eval &injected_behaviors
     end
   end
 
-  def injected_behaviours(klass)
-    if inject_behaviours = klass.instance_variable_get("@injected_behaviours")
-      inject_behaviours
+  def injected_behaviors(klass)
+    if injected_behaviors = klass.instance_variable_get("@inject_behaviors")
+      injected_behaviors
     end
   end
 end
