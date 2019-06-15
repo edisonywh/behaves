@@ -6,6 +6,10 @@ module Behaves
     @behaviors ||= Set.new(methods)
   end
 
+  def inject_behaviours (&block)
+    @injected_behaviours ||= block
+  end
+
   def behaves_like(klass)
     at_exit { check_for_unimplemented(klass) }
   end
