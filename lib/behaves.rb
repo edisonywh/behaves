@@ -36,6 +36,13 @@ module Behaves
     end
   end
 
+  def add_injected_behaviours(klass)
+    injected_behaviours = injected_behaviours(klass)
+    if injected_behaviours
+      self.class_eval &injected_behaviours
+    end
+  end
+
   def injected_behaviours(klass)
     if inject_behaviours = klass.instance_variable_get("@injected_behaviours")
       inject_behaviours
