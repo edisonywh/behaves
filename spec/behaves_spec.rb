@@ -9,11 +9,11 @@ RSpec.describe Behaves do
     Animal = Class.new
 
     Interface = Class.new
-    Impementor = Class.new
+    Implementor = Class.new
   end
 
   after do
-    class_cleaner(Animal, Dog, Interface, Impementor)
+    class_cleaner(Animal, Dog, Interface, Implementor)
   end
 
   context 'when `Dog` is supposed to behave like `Animal`' do
@@ -43,7 +43,7 @@ RSpec.describe Behaves do
         it 'should raise NotImplementedError' do
           expect do
             Dog.send(:check_for_unimplemented, Animal) # Since I can't test `at_exit`, I'm testing the private method directly.
-          end.to raise_error NotImplementedError, "Expected `Dog` to behave like `Animal`, but `method_one, method_two, method_three` are not implemented."
+          end.to raise_error NotImplementedError, "Expected `Dog` to behave like `Animal`, but public methods `method_one, method_two, method_three` are not implemented."
         end
       end
     end
@@ -76,7 +76,7 @@ RSpec.describe Behaves do
       before do
         Animal.class_eval do
           implements :method_one
-          
+
           inject_behaviors do
             def greet
               "hello"
@@ -86,11 +86,11 @@ RSpec.describe Behaves do
 
         Dog.class_eval do
           behaves_like Animal
-          
+
           def method_one; end
         end
       end
-      
+
       it "should have the injected behavior" do
         expect(Dog.instance_methods).to include(:greet)
       end
@@ -104,7 +104,7 @@ RSpec.describe Behaves do
       before do
         Animal.class_eval do
           implements :method_one
-          
+
           inject_behaviors do
             def greet
               "hello"
@@ -114,9 +114,9 @@ RSpec.describe Behaves do
 
         Dog.class_eval do
           behaves_like Animal
-          
+
           def method_one; end
-          
+
           def greet
             "bonjour"
           end
@@ -131,13 +131,13 @@ RSpec.describe Behaves do
 
   context "when Animal injects" do
     context "private behavior to Dog" do
-    
+
       before do
         Animal.class_eval do
           implements :method_one
-          
-          inject_behaviors do      
-            private 
+
+          inject_behaviors do
+            private
 
             def greet
               "hello"
@@ -147,7 +147,7 @@ RSpec.describe Behaves do
 
         Dog.class_eval do
           behaves_like Animal
-          
+
           def method_one; end
         end
       end
@@ -165,8 +165,8 @@ RSpec.describe Behaves do
       before do
         Animal.class_eval do
           implements :method_one
-          
-          inject_behaviors do       
+
+          inject_behaviors do
             private
 
             def greet
@@ -181,7 +181,7 @@ RSpec.describe Behaves do
           def method_one; end
 
           private
-          
+
           def greet
             "bonjour"
           end
@@ -258,6 +258,49 @@ RSpec.describe Behaves do
 
       it "should return the correct result when greet is invoked from Dog" do
         expect(Dog.greet).to eq("hello")
+      end
+    end
+  end
+
+  context 'private behaviors' do
+    before do
+      Interface.class_eval do
+        implements :foo
+        implements :bar, private: true
+      end
+    end
+
+    context 'when implemented' do
+      it 'raises no errors' do
+        expect do
+          Implementor.class_eval do
+            behaves_like Interface
+
+            def foo; end
+
+            private
+
+            def bar; end
+          end
+
+          Implementor.send(:check_for_unimplemented, Interface, :public)
+          Implementor.send(:check_for_unimplemented, Interface, :private)
+        end.not_to raise_error
+      end
+    end
+
+    context 'when unimplemented' do
+      it 'raises an error' do
+        expect do
+          Implementor.class_eval do
+            behaves_like Interface
+
+            def foo; end
+          end
+
+          Implementor.send(:check_for_unimplemented, Interface, :public)
+          Implementor.send(:check_for_unimplemented, Interface, :private)
+        end.to raise_error NotImplementedError, %r(private methods `bar`)
       end
     end
   end
