@@ -7,37 +7,44 @@ RSpec.describe Behaves do
     monkey_patch_behaves
     Dog = Class.new
     Animal = Class.new
+
+    Interface = Class.new
+    Impementor = Class.new
   end
 
   after do
-    class_cleaner(Animal, Dog)
+    class_cleaner(Animal, Dog, Interface, Impementor)
   end
 
   context 'when `Dog` is supposed to behave like `Animal`' do
     before do
       Animal.class_eval do
         implements :method_one, :method_two
+        implements :method_three
       end
     end
 
-    context 'when `Dog` implements behavior' do
-      it 'should not raise error' do
-        expect do
-          Dog.class_eval do
-            behaves_like Animal
+    context 'via public methods' do
+      context 'when `Dog` implements behavior' do
+        it 'should not raise error' do
+          expect do
+            Dog.class_eval do
+              behaves_like Animal
 
-            def method_one; end
-            def method_two; end
-          end
-        end.not_to raise_error
+              def method_one; end
+              def method_two; end
+              def method_three; end
+            end
+          end.not_to raise_error
+        end
       end
-    end
 
-    context 'when `Dog` does not implement behavior' do
-      it 'should raise NotImplementedError' do
-        expect do
-          Dog.send(:check_for_unimplemented, Animal) # Since I can't test `at_exit`, I'm testing the private method directly.
-        end.to raise_error NotImplementedError, "Expected `Dog` to behave like `Animal`, but `method_one, method_two` are not implemented."
+      context 'when `Dog` does not implement behavior' do
+        it 'should raise NotImplementedError' do
+          expect do
+            Dog.send(:check_for_unimplemented, Animal) # Since I can't test `at_exit`, I'm testing the private method directly.
+          end.to raise_error NotImplementedError, "Expected `Dog` to behave like `Animal`, but `method_one, method_two, method_three` are not implemented."
+        end
       end
     end
   end
@@ -48,6 +55,7 @@ RSpec.describe Behaves do
         Dog.class_eval do
           def method_one; end
           def method_two; end
+          def method_three; end
         end
       end.not_to raise_error
     end

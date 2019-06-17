@@ -3,7 +3,8 @@ require 'set'
 
 module Behaves
   def implements(*methods)
-    @behaviors ||= Set.new(methods)
+    @_Behaves_behaviors ||= Set.new
+    @_Behaves_behaviors  += Set.new(methods)
   end
 
   def inject_behaviors (&block)
@@ -20,7 +21,7 @@ module Behaves
   def check_for_unimplemented(klass)
     required = defined_behaviors(klass)
 
-    implemented = Set.new(self.instance_methods - Object.instance_methods)
+    implemented = Set.new(self.instance_methods(false))
 
     unimplemented = required - implemented
 
@@ -30,7 +31,7 @@ module Behaves
   end
 
   def defined_behaviors(klass)
-    if behaviors = klass.instance_variable_get("@behaviors")
+    if behaviors = klass.instance_variable_get(:@_Behaves_behaviors)
       behaviors
     else
       raise NotImplementedError, "Expected `#{klass}` to define behaviors, but none found."
