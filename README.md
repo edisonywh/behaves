@@ -144,6 +144,35 @@ This extends to more than just method implementation too, you can do anything yo
 
 *Do note that if you use this extensively, you might be better off using inheritance, since this will create more `Method` objects than inheritance.*
 
+### Private Behaviors
+
+Private behaviors can be defined like so:
+
+```ruby
+class Interface
+  extend Behaves
+
+  implements :foo
+  implements :bar, private: true
+end
+
+class Implementor
+  extend Behaves
+
+  behaves_like Interface
+
+  def foo
+    123
+  end
+
+  private
+
+  def bar
+    456
+  end
+end
+```
+
 ## Tips
 If you do not want to type `extend Behaves` every time, you can monkey patch `Behaves` onto `Object` class, like so:
 
