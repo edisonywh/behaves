@@ -83,6 +83,8 @@ corgi.eat
 
 The power of `Behaves` does not stop here either.
 
+## Features
+
 ### Multi-behaviors
 
 `Behaves` allow you to define multiple behavior for a single behaving object. **This is not possible with inheritance**.
@@ -108,6 +110,39 @@ class Shark
   behaves_like Prey
 end
 ```
+
+### Inject Behaviors
+
+When someone decides to use `behaves` to define behaviors, they in turn lose the ability to utilize some other aspect of inheritance, one of it being inheriting methods.
+
+So, `Behaves` now ship with a feature called `inject_behaviors` for that need!
+
+```ruby
+class Dad
+  extend Behaves
+
+  implements :speak, :eat
+
+  inject_behaviors do
+    def traits; "Dad's traits!"; end
+  end
+end
+
+class Child
+  extend Behaves
+
+  behaves_like Dad
+
+  def speak; "BABA"; end
+  def eat; "NOM NOM"; end
+end
+
+# Child.new.traits #=> "Dad's traits!"
+```
+
+This extends to more than just method implementation too, you can do anything you want! That's because the code inside `inject_behaviors` run in the context of the `Behaving Object`, also `self` inside `injected_behaviors` refers to the `Behaving Object`.
+
+*Do note that if you use this extensively, you might be better off using inheritance, since this will create more `Method` objects than inheritance.*
 
 ## Tips
 If you do not want to type `extend Behaves` every time, you can monkey patch `Behaves` onto `Object` class, like so:
