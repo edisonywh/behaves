@@ -3,13 +3,13 @@ require 'set'
 
 module Behaves
   def implements(*methods, **opts)
-    @_Behaves_public_behaviors  ||= Set.new
-    @_Behaves_private_behaviors ||= Set.new
+    @_public_behaviors  ||= Set.new
+    @_private_behaviors ||= Set.new
 
     if opts[:private] == true
-      @_Behaves_private_behaviors += Set.new(methods)
+      @_private_behaviors += Set.new(methods)
     else
-      @_Behaves_public_behaviors  += Set.new(methods)
+      @_public_behaviors  += Set.new(methods)
     end
   end
 
@@ -38,18 +38,26 @@ module Behaves
   end
 
   def implemented(type)
-    implemented = Set.new(
-      case type
-      when :public  then         instance_methods(false)
-      when :private then private_instance_methods(false)
-      else
-        raise ArgumentError.new("Invalid `type`: #{type}")
-      end
-    )
+    lookups = {
+      public:           :instance_methods,
+      private:  :private_instance_methods,
+    }
+
+    method_lookup_sym = lookups.fetch(type) do
+      raise ArgumentError.new <<~ERR
+
+        Invalid `type`: #{type}
+        Valid `type`s include: #{types.keys.map{|sym| "`#{sym.inspect}`"}.join(', ')}
+      ERR
+    end
+
+    methods = self.send(method_lookup_sym, false)
+
+    Set.new(methods)
   end
 
   def defined_behaviors(klass, type)
-    if behaviors = klass.instance_variable_get(:"@_Behaves_#{type}_behaviors")
+    if behaviors = klass.instance_variable_get(:"@_#{type}_behaviors")
       behaviors
     else
       raise NotImplementedError, "Expected `#{klass}` to define behaviors, but none found."

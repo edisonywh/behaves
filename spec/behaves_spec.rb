@@ -287,6 +287,22 @@ RSpec.describe Behaves do
           Implementor.send(:check_for_unimplemented, Interface, :private)
         end.not_to raise_error
       end
+
+      context 'but in the wrong scope' do
+        it 'raises an error' do
+          expect do
+            Implementor.class_eval do
+              behaves_like Interface
+
+              def foo; end
+              def bar; end
+            end
+
+            Implementor.send(:check_for_unimplemented, Interface, :public)
+            Implementor.send(:check_for_unimplemented, Interface, :private)
+          end.to raise_error NotImplementedError, %r(private methods `bar`)
+        end
+      end
     end
 
     context 'when unimplemented' do
