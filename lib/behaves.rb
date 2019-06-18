@@ -6,7 +6,12 @@ module Behaves
     @behaviors ||= Set.new(methods)
   end
 
+  def inject_behaviors (&block)
+    @inject_behaviors ||= block
+  end
+
   def behaves_like(klass)
+    add_injected_behaviors(klass)
     at_exit { check_for_unimplemented(klass) }
   end
 
@@ -29,6 +34,13 @@ module Behaves
       behaviors
     else
       raise NotImplementedError, "Expected `#{klass}` to define behaviors, but none found."
+    end
+  end
+
+  def add_injected_behaviors(klass)
+    injected_behaviors = klass.instance_variable_get("@inject_behaviors")
+    if injected_behaviors
+      self.class_eval &injected_behaviors
     end
   end
 end

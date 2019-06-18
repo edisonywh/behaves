@@ -63,6 +63,197 @@ RSpec.describe Behaves do
     end
   end
 
+  context "when Animal injects" do
+    context "public behavior to Dog" do
+      before do
+        Animal.class_eval do
+          implements :method_one
+          
+          inject_behaviors do
+            def greet
+              "hello"
+            end
+          end
+        end
+
+        Dog.class_eval do
+          behaves_like Animal
+          
+          def method_one; end
+        end
+      end
+      
+      it "should have the injected behavior" do
+        expect(Dog.instance_methods).to include(:greet)
+      end
+
+      it "should return the correct output when invoked" do
+        expect(Dog.new.greet).to eq("hello")
+      end
+    end
+
+    context "public behavior to Dog, but Dog has a function with the same name defined" do
+      before do
+        Animal.class_eval do
+          implements :method_one
+          
+          inject_behaviors do
+            def greet
+              "hello"
+            end
+          end
+        end
+
+        Dog.class_eval do
+          behaves_like Animal
+          
+          def method_one; end
+          
+          def greet
+            "bonjour"
+          end
+        end
+      end
+
+      it "should return the correct output from the function defined in Dog instead" do
+        expect(Dog.new.greet).to eq("bonjour")
+      end
+    end
+  end
+
+  context "when Animal injects" do
+    context "private behavior to Dog" do
+    
+      before do
+        Animal.class_eval do
+          implements :method_one
+          
+          inject_behaviors do      
+            private 
+
+            def greet
+              "hello"
+            end
+          end
+        end
+
+        Dog.class_eval do
+          behaves_like Animal
+          
+          def method_one; end
+        end
+      end
+
+      it "should have the injected behavior" do
+        expect(Dog.private_instance_methods).to include(:greet)
+      end
+
+      it "should return the correct output when invoked" do
+        expect(Dog.new.send(:greet)).to eq("hello")
+      end
+    end
+
+    context "private behavior to Dog, but Dog has a private function defined with the same name" do
+      before do
+        Animal.class_eval do
+          implements :method_one
+          
+          inject_behaviors do       
+            private
+
+            def greet
+              "hello"
+            end
+          end
+        end
+
+        Dog.class_eval do
+          behaves_like Animal
+
+          def method_one; end
+
+          private
+          
+          def greet
+            "bonjour"
+          end
+        end
+      end
+
+      it "should return the correct output when invoked" do
+        expect(Dog.new.send(:greet)).to eq("bonjour")
+      end
+    end
+
+    context "injecting to include module" do
+      TestModule = Module.new
+
+      before do
+        TestModule.module_eval do
+          def greet
+            "hello"
+          end
+        end
+
+        Animal.class_eval do
+          implements :method_one
+
+          inject_behaviors do
+            include TestModule
+          end
+        end
+
+        Dog.class_eval do
+          behaves_like Animal
+
+          def method_one; end
+        end
+      end
+
+      it "should add greet as an instance method to Dog" do
+        expect(Dog.instance_methods).to include(:greet)
+      end
+
+      it "should return the correct result when greet is invoked from Dog" do
+        expect(Dog.new.greet).to eq("hello")
+      end
+    end
+
+    context "injecting to extend a module" do
+      TestModule = Module.new
+
+      before do
+        TestModule.module_eval do
+          def greet
+            "hello"
+          end
+        end
+
+        Animal.class_eval do
+          implements :method_one
+
+          inject_behaviors do
+            extend TestModule
+          end
+        end
+
+        Dog.class_eval do
+          behaves_like Animal
+
+          def method_one; end
+        end
+      end
+
+      it "should add greet as a class method to Dog" do
+        expect(Dog.methods).to include(:greet)
+      end
+
+      it "should return the correct result when greet is invoked from Dog" do
+        expect(Dog.greet).to eq("hello")
+      end
+    end
+  end
+
   private
 
   def monkey_patch_behaves
