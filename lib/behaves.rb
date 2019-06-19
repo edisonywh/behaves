@@ -34,10 +34,30 @@ module Behaves
 
     return if unimplemented.empty?
 
-    raise NotImplementedError, <<~ERR
+
+    # basic "unimplemented method" error message
+
+    err = <<~ERR
       \n\n  Expected `#{self}` to behave like `#{klass}`, but the following #{scope} methods are unimplemented:\n
-      #{unimplemented.to_a.map{|sym| "    * `#{sym}`"}.join("\n")}\n
+      #{unimplemented.to_a.map{|method| "    * `#{method}`"}.join("\n")}\n
     ERR
+
+
+    # add "wrong scope" message
+
+    other_scopes            = (scope == :public) ? [:private] : [:public]
+    methods_in_other_scopes = Set.new( other_scopes.map{|s| implemented(s)}.map(&:to_a).flatten.compact )
+    methods_in_wrong_scope  = unimplemented && methods_in_other_scopes
+
+    if !methods_in_wrong_scope.empty?
+      err += <<~ERR
+        \n  The following methods appear to be defined, but in the wrong scope:\n
+        #{methods_in_wrong_scope.to_a.map{|method| "    * `#{method}`"}.join("\n")}\n\n
+      ERR
+    end
+
+
+    raise NotImplementedError, err
   end
 
   def implemented(scope)

@@ -303,7 +303,7 @@ RSpec.describe Behaves do
 
             Implementor.send(:check_for_unimplemented, Interface, :public)
             Implementor.send(:check_for_unimplemented, Interface, :private)
-          end.to raise_error NotImplementedError, %r(private methods.+`bar`)m
+          end.to raise_error NotImplementedError, %r(private methods.+`bar`.+appear to be defined, but in the wrong scope.+`bar`)m
         end
       end
     end
