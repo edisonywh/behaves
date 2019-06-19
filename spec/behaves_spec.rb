@@ -42,7 +42,7 @@ RSpec.describe Behaves do
       context 'when `Dog` does not implement behavior' do
         it 'should raise NotImplementedError' do
           expect do
-            Dog.send(:check_for_unimplemented, Animal) # Since I can't test `at_exit`, I'm testing the private method directly.
+            Dog.send(:check_for_unimplemented, Animal, :public) # Since I can't test `at_exit`, I'm testing the private method directly.
           end.to raise_error NotImplementedError, "Expected `Dog` to behave like `Animal`, but public methods `method_one, method_two, method_three` are not implemented."
         end
       end
@@ -65,7 +65,7 @@ RSpec.describe Behaves do
     context 'when `Dog` adheres to a non-existent `Animal` behavior' do
       it 'should raise error' do
         expect do
-          Dog.send(:check_for_unimplemented, Animal) # Since I can't test `at_exit`, I'm testing the private method directly.
+          Dog.send(:check_for_unimplemented, Animal, :public) # Since I can't test `at_exit`, I'm testing the private method directly.
         end.to raise_error NotImplementedError, "Expected `Animal` to define behaviors, but none found."
       end
     end

@@ -27,27 +27,27 @@ module Behaves
 
   private
 
-  def check_for_unimplemented(klass, type = :public)
-    required = defined_behaviors(klass, type)
+  def check_for_unimplemented(klass, scope)
+    required = defined_behaviors(klass, scope)
 
-    unimplemented = required - implemented(type)
+    unimplemented = required - implemented(scope)
 
     return if unimplemented.empty?
 
-    raise NotImplementedError, "Expected `#{self}` to behave like `#{klass}`, but #{type} methods `#{unimplemented.to_a.join(', ')}` are not implemented."
+    raise NotImplementedError, "Expected `#{self}` to behave like `#{klass}`, but #{scope} methods `#{unimplemented.to_a.join(', ')}` are not implemented."
   end
 
-  def implemented(type)
+  def implemented(scope)
     lookups = {
       public:           :instance_methods,
       private:  :private_instance_methods,
     }
 
-    method_lookup_sym = lookups.fetch(type) do
+    method_lookup_sym = lookups.fetch(scope) do
       raise ArgumentError.new <<~ERR
 
-        Invalid `type`: #{type}
-        Valid `type`s include: #{types.keys.map{|sym| "`#{sym.inspect}`"}.join(', ')}
+        Invalid `scope`: #{scope}
+        Valid `scope`s include: #{lookups.keys.map{|sym| "`#{sym.inspect}`"}.join(', ')}
       ERR
     end
 
@@ -56,8 +56,8 @@ module Behaves
     Set.new(methods)
   end
 
-  def defined_behaviors(klass, type)
-    if behaviors = klass.instance_variable_get(:"@_#{type}_behaviors")
+  def defined_behaviors(klass, scope)
+    if behaviors = klass.instance_variable_get(:"@_#{scope}_behaviors")
       behaviors
     else
       raise NotImplementedError, "Expected `#{klass}` to define behaviors, but none found."
