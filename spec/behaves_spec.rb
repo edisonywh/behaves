@@ -27,6 +27,13 @@ RSpec.describe Behaves do
     context 'via public methods' do
       context 'when `Dog` implements behavior' do
         it 'should not raise error' do
+          class Foo
+            # behaves_like Animal
+
+            private
+            def method_one; end
+          end
+
           expect do
             Dog.class_eval do
               behaves_like Animal
@@ -274,8 +281,6 @@ RSpec.describe Behaves do
       it 'raises no errors' do
         expect do
           Implementor.class_eval do
-            behaves_like Interface
-
             def foo; end
 
             private
@@ -292,8 +297,6 @@ RSpec.describe Behaves do
         it 'raises an error' do
           expect do
             Implementor.class_eval do
-              behaves_like Interface
-
               def foo; end
               def bar; end
             end
@@ -309,8 +312,6 @@ RSpec.describe Behaves do
       it 'raises an error' do
         expect do
           Implementor.class_eval do
-            behaves_like Interface
-
             def foo; end
           end
 
