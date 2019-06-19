@@ -34,7 +34,10 @@ module Behaves
 
     return if unimplemented.empty?
 
-    raise NotImplementedError, "Expected `#{self}` to behave like `#{klass}`, but #{scope} methods `#{unimplemented.to_a.join(', ')}` are not implemented."
+    raise NotImplementedError, <<~ERR
+      \n\n  Expected `#{self}` to behave like `#{klass}`, but the following #{scope} methods are unimplemented:\n
+      #{unimplemented.to_a.map{|sym| "    * `#{sym}`"}.join("\n")}\n
+    ERR
   end
 
   def implemented(scope)

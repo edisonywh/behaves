@@ -50,7 +50,7 @@ RSpec.describe Behaves do
         it 'should raise NotImplementedError' do
           expect do
             Dog.send(:check_for_unimplemented, Animal, :public) # Since I can't test `at_exit`, I'm testing the private method directly.
-          end.to raise_error NotImplementedError, "Expected `Dog` to behave like `Animal`, but public methods `method_one, method_two, method_three` are not implemented."
+          end.to raise_error NotImplementedError, %r"Expected `Dog` to behave like `Animal`, but the following public methods.+`method_one`.+`method_two`.+`method_three`"m
         end
       end
     end
@@ -303,7 +303,7 @@ RSpec.describe Behaves do
 
             Implementor.send(:check_for_unimplemented, Interface, :public)
             Implementor.send(:check_for_unimplemented, Interface, :private)
-          end.to raise_error NotImplementedError, %r(private methods `bar`)
+          end.to raise_error NotImplementedError, %r(private methods.+`bar`)m
         end
       end
     end
@@ -317,7 +317,7 @@ RSpec.describe Behaves do
 
           Implementor.send(:check_for_unimplemented, Interface, :public)
           Implementor.send(:check_for_unimplemented, Interface, :private)
-        end.to raise_error NotImplementedError, %r(private methods `bar`)
+        end.to raise_error NotImplementedError, %r(private methods.+`bar`)m
       end
     end
   end
