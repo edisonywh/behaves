@@ -1,0 +1,13 @@
+version: 2
+updates:
+- package-ecosystem: bundler
+  directory: "/"
+  schedule:
+    interval: daily
+    time: "21:00"
+  open-pull-requests-limit: 10
+  ignore:
+  - dependency-name: pry
+    versions:
+    - 0.13.1
+    - 0.14.0
