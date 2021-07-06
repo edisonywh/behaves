@@ -12,7 +12,7 @@ GEM
     pry (0.12.2)
       coderay (~> 1.1.0)
       method_source (~> 0.9.0)
-    rake (12.3.3)
+    rake (13.0.4)
     rspec (3.8.0)
       rspec-core (~> 3.8.0)
       rspec-expectations (~> 3.8.0)
@@ -36,7 +36,7 @@ DEPENDENCIES
   behaves!
   bundler (~> 2.0)
   pry
-  rake (~> 12.3)
+  rake (~> 13.0)
   rspec (~> 3.0)
   rspec_junit_formatter
 
